@@ -26,9 +26,20 @@ class TukirApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           useMaterial3: true,
-          brightness: Brightness.dark,
+          brightness: Brightness.light,
           scaffoldBackgroundColor: Color(AppColors.background),
-          appBarTheme: AppBarTheme(backgroundColor: Color(AppColors.surface)),
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Color(AppColors.primary),
+            brightness: Brightness.light,
+            primary: Color(AppColors.primary),
+            secondary: Color(AppColors.secondary),
+            surface: Color(AppColors.surface),
+          ),
+          appBarTheme: AppBarTheme(
+            backgroundColor: Color(AppColors.primary),
+            foregroundColor: Colors.white,
+            elevation: 0,
+          ),
         ),
         home: BlocBuilder<AuthCubit, AuthState>(
           builder: (context, state) {

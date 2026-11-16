@@ -3,11 +3,11 @@ class AppConfig {
   AppConfig._();
 
   // Backend API (Laravel)
-  static const String apiBaseUrl = 'http://192.168.18.212:8000/api';
-  static const String socketBaseUrl = 'http://192.168.18.212:8000';
+  static const String apiBaseUrl = 'https://tukir-backend.wasmer.app/api';
+  static const String socketBaseUrl = 'https://tukir-backend.wasmer.app';
 
   // MQTT Broker
-  static const String mqttBrokerUrl = 'tcp://192.168.18.212:1883';
+  static const String mqttBrokerUrl = 'wss://q3c13c67.ala.asia-southeast1.emqxsl.com:8084/mqtt';
   static const String mqttClientIdPrefix = 'tukir_mobile_';
 
   // TTS fallback announcement when hardware audio is unavailable.
@@ -17,3 +17,5 @@ class AppConfig {
   static const double carPresentCm = 100.0;
   static const double proximityWarningCm = 30.0;
 }
+
+

@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/app_config.dart';
 import '../models/user_model.dart';
@@ -7,6 +9,14 @@ class AuthRepository {
   final Dio _dio = Dio(BaseOptions(baseUrl: AppConfig.apiBaseUrl));
   String? _accessToken;
   UserModel? _user;
+
+  AuthRepository() {
+    (_dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
+      final client = HttpClient();
+      client.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+      return client;
+    };
+  }
 
   String? get accessToken => _accessToken;
   UserModel? get user => _user;

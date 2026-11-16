@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import '../config/app_config.dart';
 import '../models/device_model.dart';
 
@@ -11,7 +13,13 @@ class DeviceRepository {
             baseUrl: AppConfig.apiBaseUrl,
             headers: {'Authorization': 'Bearer $accessToken'},
           ),
-        );
+        ) {
+    (_dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
+      final client = HttpClient();
+      client.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+      return client;
+    };
+  }
 
   Future<List<DeviceModel>> getDevices() async {
     final response = await _dio.get('/devices');

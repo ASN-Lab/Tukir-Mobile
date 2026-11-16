@@ -4,7 +4,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:tukir_mobile/config/app_colors.dart';
 import 'package:tukir_mobile/config/app_config.dart';
 import 'package:tukir_mobile/cubit/garage_cubit.dart';
-import 'package:tukir_mobile/widgets/parking_gauge.dart';
+import 'package:tukir_mobile/widgets/parking_visualizer.dart';
 import 'package:tukir_mobile/widgets/status_badge.dart';
 
 class GarageControlScreen extends StatefulWidget {
@@ -26,8 +26,8 @@ class _GarageControlScreenState extends State<GarageControlScreen> {
     return Scaffold(
       backgroundColor: Color(AppColors.background),
       appBar: AppBar(
-        backgroundColor: Color(AppColors.surface),
-        title: Text('Garasi Anda', style: TextStyle(color: Color(AppColors.textPrimary))),
+        title: Text('Asisten Parkir Bus'),
+        centerTitle: true,
       ),
       body: BlocBuilder<GarageCubit, GarageState>(
         builder: (context, state) {
@@ -37,9 +37,9 @@ class _GarageControlScreenState extends State<GarageControlScreen> {
           if (state is GarageError) {
             return Center(child: Text(state.message, style: TextStyle(color: Color(AppColors.danger))));
           }
-                if (state is! GarageLoaded) {
-                  return const SizedBox.shrink();
-                }
+          if (state is! GarageLoaded) {
+            return const SizedBox.shrink();
+          }
 
           final s = state;
           final device = s.selectedDevice;
@@ -53,87 +53,111 @@ class _GarageControlScreenState extends State<GarageControlScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                // Device name & connection status
-                Text(device.deviceName, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(AppColors.textPrimary))),
-                SizedBox(height: 8),
-                Row(
-                  children: [
-                    StatusBadge(online: device.isOnline),
-                    SizedBox(width: 8),
-                    Text(device.isOnline ? 'Terhubung' : 'Terputus', style: TextStyle(color: Color(AppColors.textSecondary), fontSize: 12)),
-                  ],
-                ),
-                SizedBox(height: 32),
-
-                // State label
-                if (tel != null)
-                  Center(
-                    child: Text(
-                      tel.stateLabel,
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(AppColors.active)),
+                  // Device name & connection status
+                  Card(
+                    color: Color(AppColors.surface),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(device.deviceName, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(AppColors.textPrimary))),
+                          SizedBox(height: 8),
+                          Row(
+                            children: [
+                              StatusBadge(online: device.isOnline),
+                              SizedBox(width: 8),
+                              Text(device.isOnline ? 'Terhubung' : 'Terputus', style: TextStyle(color: Color(AppColors.textSecondary), fontSize: 12)),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                SizedBox(height: 24),
+                  SizedBox(height: 24),
 
-                // Parking visualizer gauge (rear distance)
-                if (tel != null && tel.rearDistCm > 0)
-                  Center(child: ParkingGauge(distanceCm: tel.rearDistCm, maxCm: AppConfig.carPresentCm)),
-                SizedBox(height: 32),
+                  // State label
+                  if (tel != null)
+                    Center(
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Color(AppColors.secondary).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          tel.stateLabel,
+                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(AppColors.primary)),
+                        ),
+                      ),
+                    ),
+                  SizedBox(height: 24),
 
-                // Slide button to open/close garage
-                Text('Slide untuk mengubah pintu:', style: TextStyle(color: Color(AppColors.textSecondary), fontSize: 12)),
-                SizedBox(height: 12),
-                Slidable(
-                  endActionPane: ActionPane(
-                    motion: ScrollMotion(),
+                  // Parking visualizer
+                  if (tel != null)
+                    ParkingVisualizer(
+                      rearDist: tel.rearDistCm, 
+                      sideDist: tel.sideDistCm,
+                    ),
+                  SizedBox(height: 32),
+
+                  // Slide button to open/close garage
+                  Text('Slide untuk mengubah pintu:', style: TextStyle(color: Color(AppColors.textSecondary), fontSize: 12)),
+                  SizedBox(height: 12),
+                  Slidable(
+                    endActionPane: ActionPane(
+                      motion: ScrollMotion(),
+                      children: [
+                        SlidableAction(
+                          onPressed: (_) => context.read<GarageCubit>().toggleGarage(device.isGarageOpen ? 'CLOSE' : 'OPEN'),
+                          backgroundColor: Color(AppColors.primary),
+                          foregroundColor: Colors.white,
+                          icon: device.isGarageOpen ? Icons.lock : Icons.lock_open,
+                          label: device.isGarageOpen ? 'Tutup' : 'Buka',
+                        ),
+                      ],
+                    ),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                      decoration: BoxDecoration(
+                        color: Color(AppColors.surface),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Color(AppColors.surfaceLight)),
+                      ),
+                      child: Text(
+                        device.isGarageOpen ? 'Pintu TERBUKA - Geser ke kanan untuk Tutup' : 'Pintu TERTUTUP - Geser ke kanan untuk Buka',
+                        style: TextStyle(color: Color(AppColors.textPrimary), fontSize: 14, fontWeight: FontWeight.w500),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 32),
+
+                  // Power toggle
+                  Text('Master Power (Sensor Parkir):', style: TextStyle(color: Color(AppColors.textSecondary), fontSize: 12)),
+                  SizedBox(height: 12),
+                  Row(
                     children: [
-                      SlidableAction(
-                        onPressed: (_) => context.read<GarageCubit>().toggleGarage(device.isGarageOpen ? 'CLOSE' : 'OPEN'),
-                        backgroundColor: Color(AppColors.active),
-                        foregroundColor: Colors.white,
-                        icon: device.isGarageOpen ? Icons.lock : Icons.lock_open,
-                        label: device.isGarageOpen ? 'Tutup' : 'Buka',
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () => context.read<GarageCubit>().togglePower('POWER_ON'),
+                          style: ElevatedButton.styleFrom(backgroundColor: Color(AppColors.active)),
+                          child: Text('ON'),
+                        ),
+                      ),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () => context.read<GarageCubit>().togglePower('POWER_OFF'),
+                          style: ElevatedButton.styleFrom(backgroundColor: Color(AppColors.danger)),
+                          child: Text('OFF'),
+                        ),
                       ),
                     ],
                   ),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-                    decoration: BoxDecoration(
-                      color: Color(AppColors.surface),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      device.isGarageOpen ? 'Pintu TERBUKA - Geser ke kanan untuk Tutup' : 'Pintu TERTUTUP - Geser ke kanan untuk Buka',
-                      style: TextStyle(color: Color(AppColors.textPrimary), fontSize: 14, fontWeight: FontWeight.w500),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 32),
-
-                // Power toggle
-                Text('Master Power (Sensor Parkir):', style: TextStyle(color: Color(AppColors.textSecondary), fontSize: 12)),
-                SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () => context.read<GarageCubit>().togglePower('POWER_ON'),
-                        style: ElevatedButton.styleFrom(backgroundColor: Color(AppColors.active)),
-                        child: Text('ON'),
-                      ),
-                    ),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () => context.read<GarageCubit>().togglePower('POWER_OFF'),
-                        style: ElevatedButton.styleFrom(backgroundColor: Color(AppColors.danger)),
-                        child: Text('OFF'),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                ],
               ),
             ),
           );

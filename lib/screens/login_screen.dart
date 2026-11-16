@@ -29,9 +29,9 @@ class _LoginScreenState extends State<LoginScreen> {
             padding: EdgeInsets.all(24),
             child: Column(
               children: [
-                Text('Tukir.ID', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Color(AppColors.textPrimary))),
+                Text('Tukir', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Color(AppColors.primary))),
                 SizedBox(height: 8),
-                Text('Smart Garage Assistant', style: TextStyle(fontSize: 14, color: Color(AppColors.textSecondary))),
+                Text('Asisten Parkir Bus', style: TextStyle(fontSize: 14, color: Color(AppColors.textSecondary))),
                 SizedBox(height: 48),
                 TextField(
                   controller: _emailCtrl,
@@ -68,11 +68,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: ElevatedButton(
                             onPressed: loading ? null : () => context.read<AuthCubit>().login(_emailCtrl.text, _passwordCtrl.text),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(AppColors.active),
+                              backgroundColor: Color(AppColors.primary),
                               padding: EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                             ),
-                            child: loading ? SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2)) : Text('Login', style: TextStyle(fontSize: 16)),
+                            child: loading ? SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : Text('Login', style: TextStyle(fontSize: 16, color: Colors.white)),
                           ),
                         ),
                         if (state is AuthError) ...[
